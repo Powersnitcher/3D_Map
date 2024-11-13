@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Leaflet Map with Navigation</title>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
+    <link rel="stylesheet" href="https://unpkg.com/leaflet-routing-machine/dist/leaflet-routing-machine.css" />
+    <style>
+        #map {
+            height: 100vh;
+        }
+    </style>
+</head>
+<body>
+    <div id="map"></div>
+
+    <!-- Include Leaflet JS -->
+    <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+    <!-- Include Leaflet Routing Machine JS -->
+    <script src="https://unpkg.com/leaflet-routing-machine/dist/leaflet-routing-machine.js"></script>
+
+    <!-- Include ThreeJS for 3D elements -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+
+    <script>
+        // Initialize the map and set its view to a specific location (New York City)
+        const map = L.map('map').setView([40.7128, -74.0060], 15);
+
+        // Add MapTiler Streets tile layer
+        const streets = L.tileLayer('https://api.maptiler.com/maps/streets/{z}/{x}/{y}.png?key=YOUR_MAPTILER_API_KEY', {
+            attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
+            maxZoom: 19,
+        }).addTo(map);
+
+        // Add MapTiler Satellite tile layer
+        const satellite = L.tileLayer('https://api.maptiler.com/maps/hybrid/{z}/{x}/{y}.jpg?key=YOUR_MAPTILER_API_KEY', {
+            attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors & MapTiler',
+            maxZoom: 19,
+        });
+
+        // Add a layer control to switch between street and satellite views
+        const baseMaps = {
+            "Streets": streets,
+            "Satellite": satellite
+        };
+        L.control.layers(baseMaps).addTo(map);
+
+        // Add a marker for New York
+        const marker = L.marker([40.7128, -74.0060]).addTo(map);
+        marker.bindPopup("<b>Hello NYC!</b><br>I am a popup.").openPopup();
+
+        // Add a circle
+        const circle = L.circle([40.708, -74.010], {
+            color: 'red',
+            fillColor: '#f03',
+            fillOpacity: 0.5,
+            radius: 500,
+        }).addTo(map);
+
+        // Add a polygon
+        const polygon = L.polygon([
+            [40.712, -74.009],
+            [40.702, -73.995],
+            [40.7, -73.94],
+        ]).addTo(map);
+        polygon.bindPopup("NYC skyscraper");
+
+        // Initialize Leaflet Routing Machine
+        const routingControl = L.Routing.control({
+            waypoints: [
+                L.latLng(40.7128, -74.0060), // Starting point (NYC)
+                L.latLng(40.748817, -73.985428) // Destination (Empire State Building)
+            ],
+            routeWhileDragging: true,
+            geocoder: L.Control.Geocoder.nominatim(),
+            showAlternatives: true,
+            altLineOptions: {
+                styles: [
+                    {color: 'black', opacity: 0.15, weight: 9},
+                    {color: 'white', opacity: 0.8, weight: 6},
+                    {color: 'blue', opacity: 0.5, weight: 2}
+                ]
+            }
+        }).addTo(map);
+
+        // Add a click event to the map to set a new destination
+        map.on('click', function (e) {
+            const newWaypoint = L.latLng(e.latlng.lat, e.latlng.lng);
+            routingControl.spliceWaypoints(routingControl.getWaypoints().length - 1, 1, newWaypoint);
+        });
+    </script>
+</body>
+</html>
+

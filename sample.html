@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>ACET navigation</title>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
+    <link rel="stylesheet" href="https://unpkg.com/leaflet-routing-machine/dist/leaflet-routing-machine.css" />
+    <link rel="stylesheet" href="https://unpkg.com/leaflet-control-geocoder/dist/Control.Geocoder.css" />
+    <style>
+        #map {
+            height: 80vh;
+            margin-bottom: 10px;
+        }
+        #search-container {
+            margin: 10px;
+            text-align: center;
+        }
+    </style>
+</head>
+<body>
+    <!-- Input field for user to enter destination -->
+    <div id="search-container">
+        <input type="text" id="destination" placeholder="Enter destination" size="50">
+        <button onclick="navigate()">Navigate</button>
+    </div>
+
+    <!-- Map Container -->
+    <div id="map"></div>
+
+    <!-- Include Leaflet JS -->
+    <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+    <!-- Include Leaflet Routing Machine JS -->
+    <script src="https://unpkg.com/leaflet-routing-machine/dist/leaflet-routing-machine.js"></script>
+    <!-- Include Leaflet Control Geocoder -->
+    <script src="https://unpkg.com/leaflet-control-geocoder/dist/Control.Geocoder.js"></script>
+
+    <script>
+        // Initialize the map and set its view to a specific location (New York City)
+        const map = L.map('map').setView([10.809688,77.010808], 18);
+
+        // Add OpenStreetMap tile layer
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+        }).addTo(map);
+
+        // Initialize Leaflet Routing Machine with a starting point
+        const routingControl = L.Routing.control({
+            waypoints: [
+                L.latLng(10.809688,77.010808) // Default starting point (New York City)
+            ],
+            routeWhileDragging: true
+        }).addTo(map);
+
+        // Function to handle user input for navigation
+        function navigate() {
+            const destinationInput = document.getElementById('destination').value;
+            
+            if (destinationInput) {
+                // Use Leaflet Control Geocoder to find the coordinates of the user-entered destination
+                L.Control.Geocoder.nominatim().geocode(destinationInput, function(results) {
+                    if (results && results.length > 0) {
+                        const destinationLatLng = results[0].center;
+
+                        // Update the route to the new destination
+                        routingControl.setWaypoints([
+                            L.latLng(10.809688, 77.010808), // Starting point (New York City)
+                            destinationLatLng // New destination based on user input
+                        ]);
+
+                        // Center the map on the new destination
+                        map.setView(destinationLatLng, 18);
+                    } else {
+                        alert('Destination not found. Please try again.');
+                    }
+                });
+            } else {
+                alert('Please enter a destination.');
+            }
+        }
+    </script>
+</body>
+</html>
